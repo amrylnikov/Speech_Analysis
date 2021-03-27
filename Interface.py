@@ -1,11 +1,14 @@
-from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QDialog, QWidget, QPushButton, QMessageBox, QMdiSubWindow, QFrame
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QWidget, QPushButton, QMessageBox
 import sys
-from streaming_sound import *
-from streaming_sound_puqt import AudioStream
-from app import SpeechRecognition
-from w2 import *
+from streaming_sound import AudioStrea1m
+from w2 import Window2
 from pydub import AudioSegment
+import sounddevice as sd
+import soundfile as sf
+import argparse
+import tempfile
+import queue
 
 class Window(QMainWindow): #класс-наследник от главного окна
     def __init__(self): #функция при создании
@@ -13,7 +16,6 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.a = "3"
         self.path = ''
         self.Window2 = Window2()
-        self.Window1 = Window1()
 
         # Speech Load
         self.parser = argparse.ArgumentParser(add_help=False)
@@ -50,13 +52,6 @@ class Window(QMainWindow): #класс-наследник от главного 
 
         self.new_text = QtWidgets.QLabel(self) #создаём текстовую переменную, чтобы потом её менять
 
-        # Кнопка "Распознавание речи"
-        self.btn = QtWidgets.QPushButton(self) #создали кнопку
-        self.btn.move(50,50) #установили место
-        self.btn.setText("Запись речи")
-        self.btn.setFixedWidth(200) #фиксируем ширину для кнопки
-        self.btn.clicked.connect(self.hereWeGo) #Вызывает функцию при нажатии (было - SpeechRecognition)
-
         #Текстовое поле рядом с кнопкой
         self.label = QtWidgets.QLabel(self)
         self.label.move(280, 55)
@@ -81,13 +76,19 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.label4.setText("Для анализа необходим файл")
         self.label4.adjustSize()
 
+        # Кнопка "Запись речи"
+        self.btn = QtWidgets.QPushButton(self) #создали кнопку
+        self.btn.move(50,50) #установили место
+        self.btn.setText("Запись речи")
+        self.btn.setFixedWidth(200) #фиксируем ширину для кнопки
+        self.btn.clicked.connect(self.hereWeGo) #Вызывает функцию при нажатии
 
         # Кнопка "Открыть файл"
         self.btn2 = QtWidgets.QPushButton(self)  # создали кнопку
         self.btn2.move(50, 100)  # установили место
         self.btn2.setText("Открыть файл")
         self.btn2.setFixedWidth(200)  # фиксируем ширину для кнопки
-        self.btn2.clicked.connect(self.lame)  # Вызывает функцию при нажатии
+        self.btn2.clicked.connect(self.get_path)  # Вызывает функцию при нажатии
 
         # Кнопка "Вывод спектра"
         self.btn3 = QtWidgets.QPushButton(self) #создали кнопку
@@ -104,12 +105,10 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.btn4.clicked.connect(self.show_window_2)  # Вызывает функцию при нажатии
 
     # просьба открыть файл
-    def lame(self):
+    def get_path(self):
         self.path = QFileDialog.getOpenFileNames()
         print(self.path)
 
-    def show_window_1(self):
-        self.Window1.displayInfo()
 
     def show_window_2(self):
         print(self.path)
@@ -154,18 +153,12 @@ class Window(QMainWindow): #класс-наследник от главного 
                               channels=self.args.channels, subtype=self.args.subtype) as file:
                 with sd.InputStream(samplerate=self.args.samplerate, device=self.args.device,
                                     channels=self.args.channels, callback=self.callback):
-                    print('#' * 80)
-                    print('press Ctrl+C to stop the recording')
-                    print('#' * 80)
                     n = 0
                     while n < 200:
                         file.write(self.q.get())
                         n = n + 1
                         print(n)
                     self.label.setText("Запись завершена!")
-        except KeyboardInterrupt:
-            print('\nRecording finished: ' + repr(self.args.filename))
-            self.parser.exit(0)
         except Exception as e:
             self.parser.exit(type(e).__name__ + ': ' + str(e))
 

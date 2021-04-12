@@ -21,7 +21,7 @@ import sys
 import time
 
 
-class AudioStrea1m(object):
+class AudioStream(object):
     def __init__(self):
 
         # stream constants
@@ -74,6 +74,9 @@ class AudioStrea1m(object):
         plt.setp(ax2, yticks=[0, 1],)
 
         # format spectrum axes
+        ax2.set_title('AUDIO WAVEFORM')
+        ax2.set_xlabel('frequency')
+        ax2.set_ylabel('amplitude')
         ax2.set_xlim(20, self.RATE / 2)
 
         # show axes

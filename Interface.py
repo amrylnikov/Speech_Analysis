@@ -1,9 +1,11 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QWidget, QPushButton, QMessageBox
 import sys
-from streaming_sound import AudioStrea1m
+from streaming_sound import AudioStream
 from w2 import Window2
 from pydub import AudioSegment
+from file_analysis import Analysis
+from linear_predictive_coding import LPC
 import sounddevice as sd
 import soundfile as sf
 import argparse
@@ -15,7 +17,10 @@ class Window(QMainWindow): #класс-наследник от главного 
         super(Window, self).__init__() #вызываем конструктор из родительского класса
         self.a = "3"
         self.path = ''
+        self.flag = True
         self.Window2 = Window2()
+        self.Analysis = Analysis()
+        self.LPC = LPC()
 
         # Speech Load
         self.parser = argparse.ArgumentParser(add_help=False)
@@ -43,7 +48,6 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.parser.add_argument(
             '-t', '--subtype', type=str, help='sound file subtype (e.g. "PCM_24")')
         self.args = self.parser.parse_args(self.remaining)
-
         self.q = queue.Queue()
 
         #Главное окно
@@ -73,15 +77,21 @@ class Window(QMainWindow): #класс-наследник от главного 
         #Текстовое поле рядом с кнопкой
         self.label4 = QtWidgets.QLabel(self)
         self.label4.move(280, 205)
-        self.label4.setText("Для анализа необходим файл")
+        self.label4.setText("Анализ библиотекой wave")
         self.label4.adjustSize()
+
+        #Текстовое поле рядом с кнопкой
+        self.label5 = QtWidgets.QLabel(self)
+        self.label5.move(280, 255)
+        self.label5.setText("Linear Prediction Coding")
+        self.label5.adjustSize()
 
         # Кнопка "Запись речи"
         self.btn = QtWidgets.QPushButton(self) #создали кнопку
         self.btn.move(50,50) #установили место
         self.btn.setText("Запись речи")
         self.btn.setFixedWidth(200) #фиксируем ширину для кнопки
-        self.btn.clicked.connect(self.hereWeGo) #Вызывает функцию при нажатии
+        self.btn.clicked.connect(self.SpeechRecording) #Вызывает функцию при нажатии
 
         # Кнопка "Открыть файл"
         self.btn2 = QtWidgets.QPushButton(self)  # создали кнопку
@@ -95,23 +105,30 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.btn3.move(50,150) #установили место
         self.btn3.setText("Анализ спектрограммы")
         self.btn3.setFixedWidth(200) #фиксируем ширину для кнопки
-        self.btn3.clicked.connect(AudioStrea1m) #Вызывает функцию при нажатии
+        self.btn3.clicked.connect(AudioStream) #Вызывает функцию при нажатии
 
-        # Кнопка "анализ"
+        # Кнопка "Обычный анализ"
         self.btn4 = QtWidgets.QPushButton(self)  # создали кнопку
         self.btn4.move(50, 200)  # установили место
-        self.btn4.setText("Запустить анализ")
+        self.btn4.setText("Запустить обычный анализ")
         self.btn4.setFixedWidth(200)  # фиксируем ширину для кнопки
-        self.btn4.clicked.connect(self.show_window_2)  # Вызывает функцию при нажатии
+        self.btn4.clicked.connect(self.execute_file_analysis)  # Вызывает функцию при нажатии
+
+        # Кнопка "Анализ LPC"
+        self.btn5 = QtWidgets.QPushButton(self)  # создали кнопку
+        self.btn5.move(50, 250)  # установили место
+        self.btn5.setText("Запустить анализ LPC")
+        self.btn5.setFixedWidth(200)  # фиксируем ширину для кнопки
+        self.btn5.clicked.connect(self.execute_linear_predictive_coding)  # Вызывает функцию при нажатии
 
     # просьба открыть файл
     def get_path(self):
-        self.path = QFileDialog.getOpenFileNames()
-        print(self.path)
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        self.path = QFileDialog.getOpenFileName(self,"Select Audio File", "","All Files (*);;Audio File (*.wav)", options=options)
+        self.path2 = self.path[0]
 
-
-    def show_window_2(self):
-        print(self.path)
+    def execute_file_analysis(self):
         if self.path == '':
             msg = QMessageBox()
             msg.setWindowTitle("Ошибка!")
@@ -119,24 +136,42 @@ class Window(QMainWindow): #класс-наследник от главного 
             msg.setIcon(QMessageBox.Warning)
             x = msg.exec_()
         else:
-            self.Window2.input1.setText(self.a)
-            self.Window2.input2.setText(str(self.path))
-            self.Window2.displayInfo()
+            print(self.path)
+            if self.flag:
+                self.Analysis.simple_plot(self.path[0])
+            else:
+                self.Analysis.simple_plot(self.path)
 
+            #self.Window2.input1.setText(self.a)
+            #self.Window2.input2.setText(str(self.path))
+            #self.Window2.displayInfo()
+
+    def execute_linear_predictive_coding(self):
+        if self.path == '':
+            msg = QMessageBox()
+            msg.setWindowTitle("Ошибка!")
+            msg.setText("Файл для анализа не выбран")
+            msg.setIcon(QMessageBox.Warning)
+            x = msg.exec_()
+        else:
+            print(self.path)
+            if self.flag:
+                self.LPC.LPC_plot(self.path[0])
+            else:
+                self.LPC.LPC_plot(self.path)
+
+    #Функция помогает в передаче аргументов
     def int_or_str(self, text):
-        """Helper function for argument parsing."""
         try:
             return int(text)
         except ValueError:
             return text
 
+    #Визывается отдельно для каждого аудио блока
     def callback(self, indata, frames, time, status):
-        """This is called (from a separate thread) for each audio block."""
-        if status:
-            print(status, file=sys.stderr)
         self.q.put(indata.copy())
 
-    def hereWeGo(self):
+    def SpeechRecording(self):
         try:
             if self.args.samplerate is None:
                 device_info = sd.query_devices(self.args.device, 'input')
@@ -148,7 +183,7 @@ class Window(QMainWindow): #класс-наследник от главного 
                 self.path = self.args.filename
                 print(self.path)
 
-            # Make sure the file is opened before recording anything:
+            # Проперка на то, открыт ли файл, прежде чем записывать что-либо
             with sf.SoundFile(self.args.filename, mode='x', samplerate=self.args.samplerate,
                               channels=self.args.channels, subtype=self.args.subtype) as file:
                 with sd.InputStream(samplerate=self.args.samplerate, device=self.args.device,
@@ -159,6 +194,7 @@ class Window(QMainWindow): #класс-наследник от главного 
                         n = n + 1
                         print(n)
                     self.label.setText("Запись завершена!")
+            self.flag = False
         except Exception as e:
             self.parser.exit(type(e).__name__ + ': ' + str(e))
 

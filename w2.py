@@ -31,7 +31,6 @@ class Window2(QWidget):
         mainLayout.addWidget(self.input5)
         mainLayout.addWidget(self.input6)
 
-
         self.closeButton = QPushButton('Close')
         self.closeButton.clicked.connect(self.close)
         mainLayout.addWidget(self.closeButton)

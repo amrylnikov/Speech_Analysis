@@ -6,6 +6,7 @@ from w2 import Window2
 from pydub import AudioSegment
 from file_analysis import Analysis
 from linear_predictive_coding import LPC
+from Mel_Frequency_Cepstral_Coefficients import MFCC
 import sounddevice as sd
 import soundfile as sf
 import argparse
@@ -21,6 +22,7 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.Window2 = Window2()
         self.Analysis = Analysis()
         self.LPC = LPC()
+        self.MFCC = MFCC()
 
         # Speech Load
         self.parser = argparse.ArgumentParser(add_help=False)
@@ -86,6 +88,12 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.label5.setText("Linear Prediction Coding")
         self.label5.adjustSize()
 
+        #Текстовое поле рядом с кнопкой
+        self.label6 = QtWidgets.QLabel(self)
+        self.label6.move(280, 305)
+        self.label6.setText("Mel-Frequency_Cepstral_Coefficients")
+        self.label6.adjustSize()
+
         # Кнопка "Запись речи"
         self.btn = QtWidgets.QPushButton(self) #создали кнопку
         self.btn.move(50,50) #установили место
@@ -103,7 +111,7 @@ class Window(QMainWindow): #класс-наследник от главного 
         # Кнопка "Вывод спектра"
         self.btn3 = QtWidgets.QPushButton(self) #создали кнопку
         self.btn3.move(50,150) #установили место
-        self.btn3.setText("Анализ спектрограммы")
+        self.btn3.setText("Анализ в реальном времени")
         self.btn3.setFixedWidth(200) #фиксируем ширину для кнопки
         self.btn3.clicked.connect(AudioStream) #Вызывает функцию при нажатии
 
@@ -120,6 +128,13 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.btn5.setText("Запустить анализ LPC")
         self.btn5.setFixedWidth(200)  # фиксируем ширину для кнопки
         self.btn5.clicked.connect(self.execute_linear_predictive_coding)  # Вызывает функцию при нажатии
+
+        # Кнопка "Анализ LPC"
+        self.btn6 = QtWidgets.QPushButton(self)  # создали кнопку
+        self.btn6.move(50, 300)  # установили место
+        self.btn6.setText("Запустить анализ MFCC")
+        self.btn6.setFixedWidth(200)  # фиксируем ширину для кнопки
+        self.btn6.clicked.connect(self.execute_MFCC)  # Вызывает функцию при нажатии
 
     # просьба открыть файл
     def get_path(self):
@@ -159,6 +174,20 @@ class Window(QMainWindow): #класс-наследник от главного 
                 self.LPC.LPC_plot(self.path[0])
             else:
                 self.LPC.LPC_plot(self.path)
+
+    def execute_MFCC(self):
+        if self.path == '':
+            msg = QMessageBox()
+            msg.setWindowTitle("Ошибка!")
+            msg.setText("Файл для анализа не выбран")
+            msg.setIcon(QMessageBox.Warning)
+            x = msg.exec_()
+        else:
+            print(self.path)
+            if self.flag:
+                self.MFCC.MFCC_plot(self.path[0])
+            else:
+                self.MFCC.MFCC_plot(self.path)
 
     #Функция помогает в передаче аргументов
     def int_or_str(self, text):

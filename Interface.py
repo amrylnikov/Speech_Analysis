@@ -7,6 +7,7 @@ from pydub import AudioSegment
 from file_analysis import Analysis
 from linear_predictive_coding import LPC
 from Mel_Frequency_Cepstral_Coefficients import MFCC
+from file_fft_analysis import FFT
 import sounddevice as sd
 import soundfile as sf
 import argparse
@@ -23,6 +24,7 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.Analysis = Analysis()
         self.LPC = LPC()
         self.MFCC = MFCC()
+        self.FFT = FFT()
 
         # Speech Load
         self.parser = argparse.ArgumentParser(add_help=False)
@@ -94,6 +96,12 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.label6.setText("Mel-Frequency_Cepstral_Coefficients")
         self.label6.adjustSize()
 
+        #Текстовое поле рядом с кнопкой
+        self.label7= QtWidgets.QLabel(self)
+        self.label7.move(280, 355)
+        self.label7.setText("Fast Fourier transform")
+        self.label7.adjustSize()
+
         # Кнопка "Запись речи"
         self.btn = QtWidgets.QPushButton(self) #создали кнопку
         self.btn.move(50,50) #установили место
@@ -135,6 +143,13 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.btn6.setText("Запустить анализ MFCC")
         self.btn6.setFixedWidth(200)  # фиксируем ширину для кнопки
         self.btn6.clicked.connect(self.execute_MFCC)  # Вызывает функцию при нажатии
+
+        # Кнопка "Анализ LPC"
+        self.btn7 = QtWidgets.QPushButton(self)  # создали кнопку
+        self.btn7.move(50, 350)  # установили место
+        self.btn7.setText("Запустить анализ FFT")
+        self.btn7.setFixedWidth(200)  # фиксируем ширину для кнопки
+        self.btn7.clicked.connect(self.execute_FFT)  # Вызывает функцию при нажатии
 
     # просьба открыть файл
     def get_path(self):
@@ -188,6 +203,20 @@ class Window(QMainWindow): #класс-наследник от главного 
                 self.MFCC.MFCC_plot(self.path[0])
             else:
                 self.MFCC.MFCC_plot(self.path)
+
+    def execute_FFT(self):
+        if self.path == '':
+            msg = QMessageBox()
+            msg.setWindowTitle("Ошибка!")
+            msg.setText("Файл для анализа не выбран")
+            msg.setIcon(QMessageBox.Warning)
+            x = msg.exec_()
+        else:
+            print(self.path)
+            if self.flag:
+                self.FFT.FFT_plot(self.path[0])
+            else:
+                self.FFT.FFT_plot(self.path)
 
     #Функция помогает в передаче аргументов
     def int_or_str(self, text):

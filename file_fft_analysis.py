@@ -1,37 +1,38 @@
 import matplotlib.pyplot as plt
+import scipy
+import wave
+import scipy.io.wavfile as wavfile
+import scipy.fftpack as fftpk
 import numpy as np
-import sounddevice as sd
-from scipy.fftpack import fft
-from math import pi
 
-plt.close('all')
+class FFT():
+    #def __init__(self):
+    #   self.pa = "delme_rec_unlimited_3u71xz4b.wav"
+    #   self.FFT_plot(self.pa)
+    def FFT_plot(self, path):
+        path = "delme_rec_unlimited_3u71xz4b.wav"
+        s_rate, signa = wavfile.read(path) #сам сигнал и частота дискретизации
+        wav = wave.open(path, "r")
+        raw = wav.readframes(-1)
+        raw = np.frombuffer(raw, "int16")
+        sampleRate = wav.getframerate()
 
-Fs = 16000
-d = 3
+        Time = np.linspace(0, len(raw) / sampleRate, num=len(raw))
+        f, (ax1, ax2) = plt.subplots(2, 1)
+        ax1.plot(Time, raw)
+        ax1.set_ylabel('Amplitude')
+        ax1.set_title('Loudness')
 
-print("говори")
+        FFT = abs(fftpk.fft(signa))
+        fregs = fftpk.fftfreq(len(FFT), (1.0/s_rate))
 
-a = sd.rec(int(d*Fs), Fs, 1, blocking = 'True')
+        #spectrum
+        ax2.plot(fregs[range(len(FFT)//2)], FFT[range(len(FFT)//2)])
+        ax2.set_xlabel('Frequency(Hz)')
+        ax2.set_ylabel('Magnitude')
+        ax2.set_title('Spectrum')
 
-print('закончил')
+        plt.show()
 
-sd.play(a, Fs)
-plt.plot(a)
-plt.xlabel('Time')
-plt.ylabel('Amplitude')
-plt.title('Loudness')
-
-x_f = fft(a)
-
-n = np.size(a)
-fr = (Fs/2)*np.linspace(0,1,round(n/2))
-x_m = (2/n)*abs(x_f[0:np.size(fr)])
-
-#spectrum
-plt.figure()
-plt.plot(fr, x_m)
-plt.xlabel('Frequency(Hz)')
-plt.ylabel('Magnitude')
-plt.title('Spectrum')
-
-plt.show()
+if __name__ == '__main__':
+    FFT()

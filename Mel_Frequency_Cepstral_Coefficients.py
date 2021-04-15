@@ -5,9 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class MFCC():
-    #def __init__(self):
-    #    self.pa = "delme_rec_unlimited_3u71xz4b.wav"
-    #    self.MFCC_plot(self.pa)
     def MFCC_plot(self, path):
     # load audio files with librosa
         signal, sr = librosa.load(path) #сам сигнал и частота дискретизации

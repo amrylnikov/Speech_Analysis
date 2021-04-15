@@ -6,11 +6,7 @@ import scipy.fftpack as fftpk
 import numpy as np
 
 class FFT():
-    #def __init__(self):
-    #   self.pa = "delme_rec_unlimited_3u71xz4b.wav"
-    #   self.FFT_plot(self.pa)
     def FFT_plot(self, path):
-        path = "delme_rec_unlimited_3u71xz4b.wav"
         s_rate, signa = wavfile.read(path) #сам сигнал и частота дискретизации
         wav = wave.open(path, "r")
         raw = wav.readframes(-1)
@@ -33,6 +29,5 @@ class FFT():
         ax2.set_title('Spectrum')
 
         plt.show()
-
 if __name__ == '__main__':
     FFT()

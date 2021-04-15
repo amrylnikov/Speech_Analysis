@@ -13,18 +13,18 @@ class Analysis():
 
     def simple_plot(self, pathb):
         print(pathb)
-        self.wav = wave.open(pathb, "r")
-        self.raw = self.wav.readframes(-1)
-        self.raw = np.frombuffer(self.raw, "int16")
-        self.sampleRate = self.wav.getframerate()
+        wav = wave.open(pathb, "r")
+        raw = wav.readframes(-1)
+        raw = np.frombuffer(raw, "int16")
+        sampleRate = wav.getframerate()
 
-        if self.wav.getnchannels() == 2:
+        if wav.getnchannels() == 2:
             print("Dude, uncool")
             sys.exit(0)
 
-        self.Time = np.linspace(0, len(self.raw) / self.sampleRate, num=len(self.raw))
+        Time = np.linspace(0, len(raw) / sampleRate, num=len(raw))
         plt.title("Waveform")
-        plt.plot(self.Time, self.raw, color="blue")
+        plt.plot(Time, raw, color="blue")
         plt.xlabel("Time")
         plt.ylabel("Amplitude")
         plt.show()

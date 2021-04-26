@@ -13,18 +13,6 @@ class MFCC():
         # Extracting MFCCs
         mfccs = librosa.feature.mfcc(y=signal, n_mfcc=13, sr=sr)
         print(mfccs.shape)
-        """
-        plt.figure(figsize=(25, 10))
-        librosa.display.waveplot(signal,
-                                 sr=sr,
-                                 max_points=50000.0,
-                                 x_axis='time',
-                                 offset=0.0,
-                                 max_sr=1000,
-                                 ax=None,
-                                 )
-        plt.show()
-        """
         # Visualising MFCCs
         #fig = plt.figure(figsize=(25, 10))
         fig, (ax1, ax2, ax3) = plt.subplots(3, 1)

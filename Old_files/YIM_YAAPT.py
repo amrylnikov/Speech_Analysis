@@ -40,15 +40,15 @@ while True:
         break
 
 # load PRAAT pitches
-# praat = np.genfromtxt('/home/eva/Documents/papers/habr/PraatPitch.txt', filling_values=0)
-# praat = praat[:, 1]
+praat = np.genfromtxt('Praat_for_f0.txt', filling_values=0)
+praat = praat[:, 1]
 
 # plot
-fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, sharey=True, figsize=(12, 8))
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, sharey=True, figsize=(12, 8))
 ax1.plot(np.asarray(pitchesYIN), label='YIN', color='green')
 ax1.legend(loc="upper right")
 ax2.plot(pitchY.samp_values, label='YAAPT', color='blue')
 ax2.legend(loc="upper right")
-# ax3.plot(praat, label='Praat', color='red')
-# ax3.legend(loc="upper right")
+ax3.plot(praat, label='Praat', color='red')
+ax3.legend(loc="upper right")
 plt.show()

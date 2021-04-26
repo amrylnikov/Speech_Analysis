@@ -5,12 +5,6 @@ import matplotlib.pyplot as plt
 
 
 class Analysis():
-    #def __init__(self):
-        #self.pathA = "delme_rec_unlimited_rd_y_na1.wav"
-
-        #self.pathA = "delme_rec_unlimited_rd_y_na1.wav"
-        #self.simple_plot(self.pathA)
-
     def simple_plot(self, pathb):
         print(pathb)
         wav = wave.open(pathb, "r")

@@ -4,9 +4,6 @@ import os, glob, pickle
 import numpy as np
 
 class NN():
-        #self.file = "delme_rec_unlimited_iiy4t1m7.wav"
-        #self.a = self.action(self.mod, self.file)
-        #print(self.a)
     def extract_feature(self, file_name, mfcc, chroma, mel):
         with soundfile.SoundFile(file_name) as sound_file:
             X = sound_file.read(dtype="float32")

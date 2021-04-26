@@ -22,7 +22,7 @@ class FFT():
         FFT = abs(fftpk.fft(signa))
         fregs = fftpk.fftfreq(len(FFT), (1.0/s_rate))
 
-        #spectrum
+        #frequency
         ax2.plot(fregs[range(len(FFT)//2)], FFT[range(len(FFT)//2)])
         ax2.set_xlabel('Frequency(Hz)')
         ax2.set_ylabel('Magnitude')

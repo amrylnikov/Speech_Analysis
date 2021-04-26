@@ -2,13 +2,13 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QWidget, QPushButton, QMessageBox
 import sys
 from streaming_sound import AudioStream
-from w2 import Window2
 from pydub import AudioSegment
 from file_analysis import Analysis
 from linear_predictive_coding import LPC
 from Mel_Frequency_Cepstral_Coefficients import MFCC
 from file_fft_analysis import FFT
 from emotion_analysis import NN
+from f0_analysis import F0_Analizer
 import sounddevice as sd
 import soundfile as sf
 import argparse
@@ -20,13 +20,15 @@ class Window(QMainWindow): #класс-наследник от главного 
         super(Window, self).__init__() #вызываем конструктор из родительского класса
         self.a = "3"
         self.path = ''
+        self.praat_path = 'Praat/Praat_for_f0.txt'
         self.flag = True
-        self.Window2 = Window2()
+        #self.Window2 = Window2()
         self.Analysis = Analysis()
         self.LPC = LPC()
         self.MFCC = MFCC()
         self.FFT = FFT()
         self.NN = NN()
+        self.F0_Analizer = F0_Analizer()
 
         # Speech Load
         self.parser = argparse.ArgumentParser(add_help=False)
@@ -102,6 +104,11 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.label8.setText("*Здесь будет указан ответ*")
         self.label8.adjustSize()
 
+        self.label9 = QtWidgets.QLabel(self)
+        self.label9.move(280, 455)
+        self.label9.setText("Используются 8 методов анализа")
+        self.label9.adjustSize()
+
         self.btn = QtWidgets.QPushButton(self) #создали кнопку
         self.btn.move(50,50) #установили место
         self.btn.setText("Запись речи")
@@ -149,6 +156,12 @@ class Window(QMainWindow): #класс-наследник от главного 
         self.btn8.setText("Характеристика речи:")
         self.btn8.setFixedWidth(200)  # фиксируем ширину для кнопки
         self.btn8.clicked.connect(self.execute_NN)  # Вызывает функцию при нажатии
+
+        self.btn9 = QtWidgets.QPushButton(self)  # создали кнопку
+        self.btn9.move(50, 450)  # установили место
+        self.btn9.setText("Анализ F0")
+        self.btn9.setFixedWidth(200)  # фиксируем ширину для кнопки
+        self.btn9.clicked.connect(self.execute_F0)  # Вызывает функцию при нажатии
 
 
     # просьба открыть файл
@@ -233,6 +246,22 @@ class Window(QMainWindow): #класс-наследник от главного 
             else:
                 emotion = self.FFT.FFT_plot(self.path)
         self.label8.setText(emotion[0])
+
+    def execute_F0(self):
+        if self.path == '':
+            msg = QMessageBox()
+            msg.setWindowTitle("Ошибка!")
+            msg.setText("Файл для анализа не выбран")
+            msg.setIcon(QMessageBox.Warning)
+            x = msg.exec_()
+            print(self.path)
+            print(self.praat_path)
+        else:
+            print(self.path)
+            if self.flag:
+                self.F0_Analizer.f0_analysis(self.path[0], self.praat_path)
+            else:
+                self.F0_Analizer.f0_analysis(self.path, self.praat_path)
 
     #Функция помогает в передаче аргументов
     def int_or_str(self, text):

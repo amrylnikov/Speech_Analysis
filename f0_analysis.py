@@ -13,9 +13,9 @@ from aubio import source, pitch
 
 class F0_Analizer():
     def f0_analysis(self, audio_path, praat_path):
-        audio_path = "Audio/" + os.path.basename(audio_path)
-        print(audio_path>praat_path)
-        from aubio import pitch
+        #audio_path = "Audio/Actor_01/" + os.path.basename(audio_path)
+        from aubio import source, pitch
+        print(audio_path)
         # load audio
         signal = basic.SignalObj(audio_path)
         filename = audio_path
@@ -139,7 +139,7 @@ class F0_Analizer():
         praat = praat[:, 1]
 
         # plot
-        plt.figure(figsize=(20, 15))
+        plt.figure(figsize=(19, 15))
 
         ax1 = plt.subplot(3, 4, 6)
         plt.plot(np.asarray(pitchesYIN), color='green')
@@ -173,6 +173,7 @@ class F0_Analizer():
         ax9 = plt.subplot(3, 4, 2)
         plt.plot(praat, color='red')
         plt.title("Praat")
+        plt.ylim(0, 500)
         ax10 = plt.subplot(3, 4, 1)
         librosa.display.waveplot(debussy, x_axis= "off")
         plt.title("Audio wave")
@@ -186,4 +187,7 @@ class F0_Analizer():
         plt.show()
 
 if __name__ == '__main__':
-    F0_Analizer()
+    audio = "Audio/length/5_sec.wav"
+    praat = "Audio/length/5_sec.txt"
+    F0 = F0_Analizer()
+    F0.f0_analysis(audio, praat)

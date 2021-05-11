@@ -11,9 +11,9 @@ import librosa.display
 import IPython.display as ipd
 from aubio import source, pitch
 
-class F0_Analizer():
+class F0_Analyser():
     def f0_analysis(self, audio_path, praat_path):
-        #audio_path = "Audio/Actor_01/" + os.path.basename(audio_path)
+        audio_path = "Audio/" + os.path.basename(audio_path)
         from aubio import source, pitch
         print(audio_path)
         # load audio
@@ -95,8 +95,6 @@ class F0_Analizer():
 
         frames3 = range(len(ber_debussy))
         t3 = librosa.frames_to_time(frames3, hop_length=HOP_LENGTH)
-
-        # ... SC, BW part
 
         sc_debussy = librosa.feature.spectral_centroid(y=debussy, sr=sr, n_fft=FRAME_SIZE, hop_length=HOP_LENGTH)[0]
         ban_debussy = librosa.feature.spectral_bandwidth(y=debussy, sr=sr, n_fft=FRAME_SIZE, hop_length=HOP_LENGTH)[0]
@@ -187,7 +185,7 @@ class F0_Analizer():
         plt.show()
 
 if __name__ == '__main__':
-    audio = "Audio/length/5_sec.wav"
-    praat = "Audio/length/5_sec.txt"
+    audio = "Audio/Actor_01/03-01-01-01-01-01-01.wav"
+    praat = "Praat/Actor_01/03-01-01-01-01-01-01.txt"
     F0 = F0_Analizer()
     F0.f0_analysis(audio, praat)

@@ -29,5 +29,6 @@ class FFT():
         ax2.set_title('Spectrum')
 
         plt.show()
+
 if __name__ == '__main__':
     FFT()

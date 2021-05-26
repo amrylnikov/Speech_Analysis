@@ -13,10 +13,9 @@ from aubio import source, pitch
 
 class F0_Analyser():
     def f0_analysis(self, audio_path, praat_path):
-        audio_path = "Audio/" + os.path.basename(audio_path)
+        #audio_path = "Audio/" + os.path.basename(audio_path)
         from aubio import source, pitch
         print(audio_path)
-        # load audio
         signal = basic.SignalObj(audio_path)
         filename = audio_path
         debussy, sr = librosa.load(filename)
@@ -32,22 +31,14 @@ class F0_Analyser():
         Y_debussy = librosa.power_to_db(np.abs(S_debussy) ** 2)
 
         # Time domain features AE, RMS, ZCR part
-        sample_duration = 1 / sr
-        tot_samples = len(debussy)
-        duration = 1 / sr * tot_samples
         zcr_debussy = librosa.feature.zero_crossing_rate(debussy, frame_length=FRAME_SIZE, hop_length=HOP_LENGTH)[0]
         rms_debussy = librosa.feature.rms(debussy, frame_length=FRAME_SIZE, hop_length=HOP_LENGTH)[0]
 
-
         def amplitude_envelope(signal, frame_size, hop_length):
-            """Calculate the amplitude envelope of a signal with a given frame size nad hop length."""
             amplitude_envelope = []
-
-            # calculate amplitude envelope for each frame
             for i in range(0, len(signal), hop_length):
                 amplitude_envelope_current_frame = max(signal[i:i + frame_size])
                 amplitude_envelope.append(amplitude_envelope_current_frame)
-
             return np.array(amplitude_envelope)
 
         ae_debussy = amplitude_envelope(debussy, FRAME_SIZE, HOP_LENGTH)
@@ -57,30 +48,20 @@ class F0_Analyser():
         t2 = librosa.frames_to_time(frames2, hop_length=HOP_LENGTH)
 
         # Frequency features BER part
-
         debussy_spec = librosa.stft(debussy, n_fft=FRAME_SIZE, hop_length=HOP_LENGTH)
-
         def calculate_split_frequency_bin(spectrogram, split_frequency, sample_rate):
-            """Infer the frequency bin associated to a given split frequency."""
-
+            #Infer the frequency bin associated to a given split frequency
             frequency_range = sample_rate / 2
             frequency_delta_per_bin = frequency_range / spectrogram.shape[0]
             split_frequency_bin = np.floor(split_frequency / frequency_delta_per_bin)
             return int(split_frequency_bin)
 
-        split_frequency_bin = calculate_split_frequency_bin(debussy_spec, 2000, 22050)
-
         def calculate_band_energy_ratio(spectrogram, split_frequency, sample_rate):
-            """Calculate band energy ratio with a given split frequency."""
-
+            #Calculate band energy ratio with a given split frequency
             split_frequency_bin = calculate_split_frequency_bin(spectrogram, split_frequency, sample_rate)
             band_energy_ratio = []
-
-            # calculate power spectrogram
             power_spec = np.abs(spectrogram) ** 2
             power_spec = power_spec.T
-
-            # calculate BER value for each frame
             for frequencies_in_frame in power_spec:
                 sum_power_low_frequencies = np.sum(frequencies_in_frame[:split_frequency_bin])
                 sum_power_high_frequencies = np.sum(frequencies_in_frame[split_frequency_bin:])
@@ -88,7 +69,6 @@ class F0_Analyser():
                     sum_power_high_frequencies = 0.00000000000000001
                 ber_current_frame = sum_power_low_frequencies / sum_power_high_frequencies
                 band_energy_ratio.append(ber_current_frame)
-
             return np.array(band_energy_ratio)
 
         ber_debussy = calculate_band_energy_ratio(debussy_spec, 2000, sr)
@@ -101,10 +81,10 @@ class F0_Analyser():
         frames4 = range(len(sc_debussy))
         t4 = librosa.frames_to_time(frames4, hop_length=HOP_LENGTH)
 
-        # YAAPT pitches
+        # YAAPT
         pitchY = pYAAPT.yaapt(signal, frame_length=40, tda_frame_length=40, f0_min=75, f0_max=600)
 
-        # YIN pitches
+        # YIN
         downsample = 1
         samplerate = 0
         win_s = 1764 // downsample  # fft size
@@ -138,47 +118,43 @@ class F0_Analyser():
 
         # plot
         plt.figure(figsize=(19, 15))
-
-        ax1 = plt.subplot(3, 4, 6)
+        plt.subplot(3, 4, 6)
         plt.plot(np.asarray(pitchesYIN), color='green')
         plt.title("YIN")
         plt.ylim(0, 500)
-        ax2 = plt.subplot(3, 4, 10)
+        plt.subplot(3, 4, 10)
         plt.plot(pitchY.samp_values, color='green')
         plt.title("YAAPT")
         plt.ylim(0, 500)
-        ax3 = plt.subplot(3, 4, 3)
+        plt.subplot(3, 4, 3)
         plt.plot(t, ae_debussy, color="black")
-        #plt.ylim(0, 1)
         plt.title("Amplitude Envelope (AE)")
-        ax4 = plt.subplot(3, 4, 7)
+        plt.subplot(3, 4, 7)
         plt.plot(t2, rms_debussy, color="black")
-        #plt.ylim(0, 1)
         plt.title("Root-Mean-Square energy (RMS)")
-        ax5 = plt.subplot(3, 4, 11)
+        plt.subplot(3, 4, 11)
         plt.plot(t2, zcr_debussy, color="black")
-        #plt.ylim(0, 1)
         plt.title("Zero-Crossing Rate (ZCR)")
-        ax6 = plt.subplot(3, 4, 4)
+        plt.subplot(3, 4, 4)
         plt.plot(t3, ber_debussy, color="b")
         plt.title("Band Energy Ratio (BER)")
-        ax7 = plt.subplot(3, 4, 8)
+        plt.subplot(3, 4, 8)
         plt.plot(t4, sc_debussy, color="b")
         plt.title("Spectral Centroid (SC)")
-        ax8 = plt.subplot(3, 4, 12)
+        plt.subplot(3, 4, 12)
         plt.plot(t4, ban_debussy, color="b")
         plt.title("Bandwidth (BW)")
-        ax9 = plt.subplot(3, 4, 2)
+        plt.subplot(3, 4, 2)
         plt.plot(praat, color='red')
         plt.title("Praat")
         plt.ylim(0, 500)
-        ax10 = plt.subplot(3, 4, 1)
+        plt.subplot(3, 4, 1)
         librosa.display.waveplot(debussy, x_axis= "off")
         plt.title("Audio wave")
-        ax11 = plt.subplot(3, 4, 5)
+        plt.subplot(3, 4, 5)
         plt.plot(fregs[range(len(FFT) // 2)], FFT[range(len(FFT) // 2)])
         plt.title("Frequency")
-        ax12 = plt.subplot(3, 4, 9)
+        plt.subplot(3, 4, 9)
         librosa.display.specshow(Y_debussy, sr=sr, hop_length=HOP_LENGTH, x_axis="time", y_axis="log")
         plt.colorbar(format="%+2.f")
         plt.title("Spectrogram")
@@ -187,5 +163,5 @@ class F0_Analyser():
 if __name__ == '__main__':
     audio = "Audio/Actor_01/03-01-01-01-01-01-01.wav"
     praat = "Praat/Actor_01/03-01-01-01-01-01-01.txt"
-    F0 = F0_Analizer()
+    F0 = F0_Analyser()
     F0.f0_analysis(audio, praat)
